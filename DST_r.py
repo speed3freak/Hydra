@@ -28,14 +28,14 @@ class node:
 			else:
 				print("value not found contact other node")
 				if kbm in self.f_table:
-				  return self.f_table[kbm]
+				  return (False,self.f_table[kbm])#wrong place link to right
 				else:
-				  return False
+				  return (False,False)#wrong place, link not found
 		#if it gets here key is in node's range check table
 		if key in self.values:
-		  return self.values[key]
+		  return (True,self.values[key])#right place found value
 		else:
-		  return False
+		  return (True,False)#right place value not found
 
 	def add_value(self,key,value):
 	  #todo check if it is in range
@@ -43,9 +43,26 @@ class node:
 	def add_finger(self,f_address,f_range):
 	  self.f_table[f_range] = f_address;
 		
-		
-node = node(int('001011',2),2,2,8)
-node.add_value(int('00101110',2),True)
-print node.get_value(int('00101110',2))
-node.add_finger(1,int('00010000',2))
-print node.get_value(int('00011110',2))
+nodes = {}
+def query_node(node_num,key):
+  address = node_num
+  while(True):
+    v_found, v = nodes[address].get_value(key)
+    if v_found == True:
+      return v
+    elif(v == False):
+      print("value not in table")
+      return v
+    else:
+      print("gonig to node %i" %v)
+      address = v
+  
+nodes[0] = node(int('001011',2),2,2,8)
+nodes[0].add_value(int('00101110',2),True)
+nodes[0].add_finger(1,int('00010000',2))
+
+nodes[1] = node(int('000111',2),2,2,8)
+nodes[1].add_value(int('00011110',2),True)
+
+print query_node(0,int('00101110',2))#hit
+print query_node(0,int('00011110',2))#miss on 0 hit on 1
