@@ -1,4 +1,6 @@
 
+DEBUG = True
+
 class node:
 	def __init__(self, range_bits,node_length,headsh,key_length):
 		self.range_bits = range_bits << node_length # pad range_bits
@@ -10,7 +12,7 @@ class node:
 		#table containing masked bit ranges associated with other nodes
 		self.f_table = {}
 		
-	def get_value(self, key):
+	def find_value(self, key):
 		rbm = 0 #to store range bitmasked
 		kbm = 0#to store key bitmasked
 		bitmask = (2^self.head_shift - 1) #fill with correct number of ones
@@ -19,27 +21,50 @@ class node:
 		for i in range(0,self.num_shifts):
 			rbm = self.range_bits&bitmask
 			kbm = key&bitmask
-			print("offset %i" %i)
-			print("bitmask: %s" %bin(bitmask))
-			print("rbm: %s" %bin(rbm))
-			print("kbm: %s" %bin(kbm))
+			if(DEBUG): 
+			  print("offset %i" %i)
+			  print("bitmask: %s" %bin(bitmask))
+			  print("rbm: %s" %bin(rbm))
+			  print("kbm: %s" %bin(kbm))
 			if rbm == kbm:
 				bitmask = bitmask >> (self.head_shift)
 			else:
-				print("value not found contact other node")
+				if(DEBUG): print("value not found contact other node")
 				if kbm in self.f_table:
 				  return (False,self.f_table[kbm])#wrong place link to right
 				else:
 				  return (False,False)#wrong place, link not found
 		#if it gets here key is in node's range check table
 		if key in self.values:
-		  return (True,self.values[key])#right place found value
+		  return (True,True)#right place found value
 		else:
 		  return (True,False)#right place value not found
 
+	def get_value(self,key):
+	  found_pair = self.find_value(key)
+	  if found_pair == (True,False):
+	    if(DEBUG): print("key not found")
+	    return found_pair
+	  elif(found_pair == (True,True)):
+	    if(DEBUG): print("key found")
+	    return (True,self.values[key])
+	  else:
+	    if(DEBUG): print("key not found at this node")
+	    return found_pair
+
 	def add_value(self,key,value):
-	  #todo check if it is in range
-	  self.values[key]=value
+	  found_pair = self.find_value(key)
+	  if found_pair == (True,False):
+	    if(DEBUG): print("value added")
+	    self.values[key]=value
+	    return (True,True)#in this case if it does not exsist and is added it is a good return
+	  elif(found_pair == (True,True)):
+	    if(DEBUG): print("key already exsists")
+	    return (True,False) #it is found but cannot be added, bad return
+	  else:
+	    if(DEBUG): print("key not found at this node")
+	    return found_pair
+	    
 	def add_finger(self,f_address,f_range):
 	  self.f_table[f_range] = f_address;
 		
@@ -51,10 +76,10 @@ def query_node(node_num,key):
     if v_found == True:
       return v
     elif(v == False):
-      print("value not in table")
+      if(DEBUG): print("value not in table aborting query")
       return v
     else:
-      print("gonig to node %i" %v)
+      if(DEBUG): print("gonig to node %i" %v)
       address = v
   
 nodes[0] = node(int('001011',2),2,2,8)
