@@ -27,7 +27,10 @@ class node:
 				bitmask = bitmask >> (self.head_shift)
 			else:
 				print("value not found contact other node")
-				return False
+				if kbm in self.f_table:
+				  return self.f_table[kbm]
+				else:
+				  return False
 		#if it gets here key is in node's range check table
 		if key in self.values:
 		  return self.values[key]
@@ -36,9 +39,13 @@ class node:
 
 	def add_value(self,key,value):
 	  #todo check if it is in range
-		self.values[key]=value
+	  self.values[key]=value
+	def add_finger(self,f_address,f_range):
+	  self.f_table[f_range] = f_address;
 		
 		
 node = node(int('001011',2),2,2,8)
 node.add_value(int('00101110',2),True)
 print node.get_value(int('00101110',2))
+node.add_finger(1,int('00010000',2))
+print node.get_value(int('00011110',2))
