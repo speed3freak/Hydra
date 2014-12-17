@@ -75,19 +75,27 @@ def query_node(node_num,key):
     v_found, v = nodes[address].get_value(key)
     if v_found == True:
       return v
-    elif(v == False):
-      if(DEBUG): print("value not in table aborting query")
+    else:
+      if(DEBUG): print("gonig to node %i" %v)
+      address = v
+      
+def add_to_table(node_num,key,value):
+  address = node_num
+  while(True):
+    v_found, v = nodes[address].add_value(key,value)
+    if v_found == True:
       return v
     else:
       if(DEBUG): print("gonig to node %i" %v)
       address = v
-  
+
 nodes[0] = node(int('001011',2),2,2,8)
-nodes[0].add_value(int('00101110',2),True)
 nodes[0].add_finger(1,int('00010000',2))
 
 nodes[1] = node(int('000111',2),2,2,8)
-nodes[1].add_value(int('00011110',2),True)
+
+add_to_table(0,int('00101110',2),True)#test node add hit
+add_to_table(0,int('00011110',2),True)#test node add miss and pass off
 
 print query_node(0,int('00101110',2))#hit
 print query_node(0,int('00011110',2))#miss on 0 hit on 1
