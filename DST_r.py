@@ -3,7 +3,8 @@ DEBUG = True
 
 class node:
 	def __init__(self, range_bits,node_length,headsh,key_length):
-		self.range_bits = range_bits << node_length # pad range_bits
+		self.range_bits = []
+		self.range_bits.append(range_bits << node_length) # pad range_bits and add to ranges
 		self.node_length = node_length
 		self.head_shift = headsh
 		self.key_length = key_length
@@ -13,20 +14,21 @@ class node:
 		self.f_table = {}
 		
 	def find_value(self, key):
-		rbm = 0 #to store range bitmasked
+		rbm = [] #to store range bitmasked
 		kbm = 0#to store key bitmasked
 		bitmask = (2^self.head_shift - 1) #fill with correct number of ones
 		bitmask = bitmask << (self.node_length + (self.num_shifts-1)*self.head_shift) #skip over node stored bits
 		#todo skip over alread processed bits
 		for i in range(0,self.num_shifts):
-			rbm = self.range_bits&bitmask
+			rbm = [r&bitmask for r in self.range_bits]
 			kbm = key&bitmask
 			if(DEBUG): 
 			  print("offset %i" %i)
 			  print("bitmask: %s" %bin(bitmask))
-			  print("rbm: %s" %bin(rbm))
+			  for i,r in enumerate(rbm):
+			    print("rbm %i: %s" %(i,bin(r)))
 			  print("kbm: %s" %bin(kbm))
-			if rbm == kbm:
+			if kbm in rbm:
 				bitmask = bitmask >> (self.head_shift)
 			else:
 				if(DEBUG): print("value not found contact other node")
@@ -67,6 +69,9 @@ class node:
 	    
 	def add_finger(self,f_address,f_range):
 	  self.f_table[f_range] = f_address;
+	  
+	def add_range(self,range_bits):
+	  self.range_bits.append(range_bits << self.node_length)
 		
 nodes = {}
 def query_node(node_num,key):
@@ -93,9 +98,12 @@ nodes[0] = node(int('001011',2),2,2,8)
 nodes[0].add_finger(1,int('00010000',2))
 
 nodes[1] = node(int('000111',2),2,2,8)
+nodes[1].add_range(int('000110',2))
 
 add_to_table(0,int('00101110',2),True)#test node add hit
 add_to_table(0,int('00011110',2),True)#test node add miss and pass off
+add_to_table(1,int('00011010',2),True)#add to node one
 
 print query_node(0,int('00101110',2))#hit
 print query_node(0,int('00011110',2))#miss on 0 hit on 1
+print query_node(0,int('00011010',2))#querry pass off second range
