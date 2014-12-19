@@ -16,23 +16,26 @@ class node:
 	def find_value(self, key):
 		rbm = [] #to store range bitmasked
 		kbm = 0#to store key bitmasked
+		rkbm = 0#rolling key bitmask to look up finger 
 		bitmask = (2^self.head_shift - 1) #fill with correct number of ones
 		bitmask = bitmask << (self.node_length + (self.num_shifts-1)*self.head_shift) #skip over node stored bits
 		#todo skip over alread processed bits
 		for i in range(0,self.num_shifts):
 			rbm = [r&bitmask for r in self.range_bits]
 			kbm = key&bitmask
+			rkbm = rkbm|kbm
 			if(DEBUG): 
 			  print("offset %i" %i)
 			  print("bitmask: %s" %bin(bitmask))
 			  for i,r in enumerate(rbm):
 			    print("rbm %i: %s" %(i,bin(r)))
 			  print("kbm: %s" %bin(kbm))
+			  print("rkbm: %s" %bin(rkbm))
 			if kbm in rbm:
 				bitmask = bitmask >> (self.head_shift)
 			else:
 				if(DEBUG): print("value not found contact other node")
-				if kbm in self.f_table:
+				if rkbm in self.f_table:
 				  return (False,self.f_table[kbm])#wrong place link to right
 				else:
 				  return (False,False)#wrong place, link not found
@@ -72,8 +75,30 @@ class node:
 	  
 	def add_range(self,range_bits):
 	  self.range_bits.append(range_bits << self.node_length)
-		
-nodes = {}
+	  
+	def find_missing_fingers(self):
+	 #skip over node stored bits
+	for i in range(0,self.num_shifts):
+	  bitmask = bitmask << (self.node_length + (self.num_shifts-1)*self.head_shift)
+	  for r in range(0,self.head_shift^2-1):#all binary combinations in range
+	    rbm = [r&bitmask for r in self.range_bits]
+	    kbm = key&bitmask
+	    rkbm = rkbm|kbm
+	    if kbm in rbm:
+	      bitmask = bitmask >> (self.head_shift)
+	  
+	    
+'''		
+class DHT_sim:
+  def __init__(nodes,node_length,head_shift,key_length):
+    self.nodes = {}
+    self.node_length = node_length
+    self.head_shift = head_shift
+    self.key_length = key_length
+    
+  def make_static_DHT():
+    for
+'''  
 def query_node(node_num,key):
   address = node_num
   while(True):
@@ -93,7 +118,9 @@ def add_to_table(node_num,key,value):
     else:
       if(DEBUG): print("gonig to node %i" %v)
       address = v
-
+      
+      
+nodes = {}
 nodes[0] = node(int('001011',2),2,2,8)
 nodes[0].add_finger(1,int('00010000',2))
 
