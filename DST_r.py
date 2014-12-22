@@ -77,18 +77,29 @@ class node:
 	  self.range_bits.append(range_bits << self.node_length)
 	  
 	def find_missing_fingers(self):
-	 #skip over node stored bits
-	for i in range(0,self.num_shifts):
+	  range_f = []
+	  rbm = []
+	  rrbm = []
+	  bitmask = (2^self.head_shift - 1) #fill with correct number of ones
 	  bitmask = bitmask << (self.node_length + (self.num_shifts-1)*self.head_shift)
-	  for r in range(0,self.head_shift^2-1):#all binary combinations in range
+	  for i in range(0,self.num_shifts):
 	    rbm = [r&bitmask for r in self.range_bits]
-	    kbm = key&bitmask
-	    rkbm = rkbm|kbm
-	    if kbm in rbm:
-	      bitmask = bitmask >> (self.head_shift)
+	    if len(rrbm) == 0:
+	      rrbm = rbm
+	    rrbm = [i|j for i,j in rbm,rrbm]
+	    for bmRange in rrbm:
+	      range_f.append(bmRange)
+	    bitmask = bitmask >> (self.head_shift)
+	  
+	  return range_f
+'''	      
+	    for r in range(0,self.head_shift^2-1):#all binary combinations in range
+	      rrbm = rkbm|kbm
+	      if kbm in rbm:
+		
 	  
 	    
-'''		
+		
 class DHT_sim:
   def __init__(nodes,node_length,head_shift,key_length):
     self.nodes = {}
@@ -127,10 +138,11 @@ nodes[0].add_finger(1,int('00010000',2))
 nodes[1] = node(int('000111',2),2,2,8)
 nodes[1].add_range(int('000110',2))
 
-add_to_table(0,int('00101110',2),True)#test node add hit
-add_to_table(0,int('00011110',2),True)#test node add miss and pass off
-add_to_table(1,int('00011010',2),True)#add to node one
+print nodes[0].find_missing_fingers()
+#add_to_table(0,int('00101110',2),True)#test node add hit
+#add_to_table(0,int('00011110',2),True)#test node add miss and pass off
+#add_to_table(1,int('00011010',2),True)#add to node one
 
-print query_node(0,int('00101110',2))#hit
-print query_node(0,int('00011110',2))#miss on 0 hit on 1
-print query_node(0,int('00011010',2))#querry pass off second range
+#print query_node(0,int('00101110',2))#hit
+#print query_node(0,int('00011110',2))#miss on 0 hit on 1
+#print query_node(0,int('00011010',2))#querry pass off second range
